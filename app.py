@@ -1,39 +1,56 @@
 import streamlit as st
-
-st.markdown("# Summarize Top 5 Hackerank Articles :sparkles: ")
-
+from selenium import webdriver
 import requests
+from bs4 import BeautifulSoup
+
+st.markdown("# Summarize Top 5 Hackerank Articles with Phi-3 :sparkles: ")
 
 url = "https://models.inference.ai.azure.com/chat/completions"
 headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + st.secrets["GITHUB_MODEL_API"]
 }
-data = {
-    "messages": [
-        {"role": "system", "content": "Summarize the user's input."},
-        {"role": "user", "content": """
-        support systems shows that six out of nine of these crucial processes have crossed their “planetary boundary.” These boundaries are not tipping points—it’s possible to recover from passing them—but they are thresholds signifying we’ve entered higher-risk territory.
+response = requests.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+ids = response.json()[:5]
+posts = []
+for id in ids:
+    post = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{id}.json")
+    posts.append(post.json())
 
-On another worrying note, scientists found the planet is close to breaching a seventh planetary boundary: ocean acidification.
+# parse each post url
+posts = [post['url'] for post in posts]
+st.write('top 5 Hackerank Articles')
+# markdown for each post in bullets
+for post in posts:
+    st.markdown(f'- {post}')
 
 
-In its first edition, a report from the Potsdam Institute for Climate Impact Research (PIK) used years of data and assessments to evaluate the nine planetary boundaries. These life-support systems make Earth resilient and stable. Alarmingly, six of those boundaries have already been crossed, as a similar assessment last year also concluded. The new report adds to that finding, suggesting these six metrics are now moving further into the “red zone,” or what the researchers consider a high-risk zone.
+def get_summary(article_url):
+    # use beautiful soup to get article text
 
-“The overall diagnostic is that the patient, Planet Earth, is in critical condition,” says Johan Rockström, PIK director and pioneer of the Planetary Boundaries Framework, in a statement.
+    # dr = webdriver.Chrome()
+    # dr.get("https://www.mobile.de/?lang=en")
+    # article_text = BeautifulSoup(dr.page_source,"lxml")
+    # article_text = bs4.BeautifulSoup(requests.get(article_url,headers={'User-Agent': 'Mozilla/5.0'}).text, "html.parser").get_text()
 
-Boundaries that have already been exceeded have to do with climate change, freshwater availability, biodiversity, land use, nutrient pollution (such as phosphorus and nitrogen) and the introduction of synthetic chemicals and plastics to the environment.
+    article_text = "sdfsdfsdfsdf"
+    st.write(article_text)
+    data = {
+        "messages": [
+            {"role": "system", "content": "Summarize the user's input."},
+            {"role": "user", "content": article_text
+            },
+        ],
+        "model": "Phi-3-medium-128k-instruct"
+    }
 
-Ocean acidification is one of the systems that has not yet crossed its planeta"""
-        },
-    ],
-    "model": "Phi-3-medium-128k-instruct"
-}
+    response = requests.post(url, headers=headers, json=data)
+    data = response.json()
+    return data['choices'][0]['message']['content']
 
-response = requests.post(url, headers=headers, json=data)
-data = response.json()
-st.markdown('## [Article #1](https://news.ycombinator.com/)')
-st.write(data['choices'][0]['message']['content'])
-st.markdown('## [Article #2](https://news.ycombinator.com/)')
-st.write(data['choices'][0]['message']['content'])
+for url in posts:
+   
+    st.markdown(f'## {url}')
+    st.write( get_summary(url))
+
 

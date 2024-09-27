@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 st.markdown("# Summarize Top 5 Hackerank Articles with Phi-3 :sparkles: ")
 
-url = "https://models.inference.ai.azure.com/chat/completions"
+azure_url = "https://models.inference.ai.azure.com/chat/completions"
 headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + st.secrets["GITHUB_MODEL_API"]
@@ -18,23 +18,25 @@ for id in ids:
     posts.append(post.json())
 
 # parse each post url
-posts = [post['url'] for post in posts]
-st.write('top 5 Hackerank Articles')
-# markdown for each post in bullets
+posts_urls = [post['url'] for post in posts]
+
+# for each post get the 'kids' and make a request for each comment into a string
+comments_per_post = {}
 for post in posts:
-    st.markdown(f'- {post}')
-
-
+    comments_per_post[post['url']] = []
+    children_comments = []
+    kids = post['kids']
+    for kid in kids:
+        comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
+        if comment['text']:
+            children_comments.append(comment['text']) 
+    comments_per_post[post['url']] = children_comments
+           
+st.write('top 5 Hackerank Articles')
 def get_summary(article_url):
-    # use beautiful soup to get article text
 
-    # dr = webdriver.Chrome()
-    # dr.get("https://www.mobile.de/?lang=en")
-    # article_text = BeautifulSoup(dr.page_source,"lxml")
-    # article_text = bs4.BeautifulSoup(requests.get(article_url,headers={'User-Agent': 'Mozilla/5.0'}).text, "html.parser").get_text()
 
-    article_text = "sdfsdfsdfsdf"
-    st.write(article_text)
+    article_text = comments_per_post[article_url]
     data = {
         "messages": [
             {"role": "system", "content": "Summarize the user's input."},
@@ -44,13 +46,13 @@ def get_summary(article_url):
         "model": "Phi-3-medium-128k-instruct"
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(azure_url, headers=headers, json=data)
     data = response.json()
     return data['choices'][0]['message']['content']
 
-for url in posts:
+for hn_url in posts_urls:
    
-    st.markdown(f'## {url}')
-    st.write( get_summary(url))
+    st.markdown(f'- {hn_url}')
+    st.markdown(f'  {get_summary(hn_url)}')
 
 

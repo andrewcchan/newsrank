@@ -29,7 +29,7 @@ for post in posts:
         kids = post['kids']
         for kid in kids:
             comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
-            if comment['text']:
+            if 'text' in comment.keys():
                 children_comments.append(comment['text']) 
     comments_per_post[post['url']] = ''.join(children_comments)
            

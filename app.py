@@ -25,12 +25,13 @@ comments_per_post = {}
 for post in posts:
     comments_per_post[post['url']] = []
     children_comments = []
-    kids = post['kids']
-    for kid in kids:
-        comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
-        if comment['text']:
-            children_comments.append(comment['text']) 
-    comments_per_post[post['url']] = children_comments
+    if 'kids' in post.keys():
+        kids = post['kids']
+        for kid in kids:
+            comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
+            if comment['text']:
+                children_comments.append(comment['text']) 
+    comments_per_post[post['url']] = ''.join(children_comments)
            
 st.write('top 5 Hackerank Articles')
 def get_summary(article_url):
@@ -39,7 +40,7 @@ def get_summary(article_url):
     article_text = comments_per_post[article_url]
     data = {
         "messages": [
-            {"role": "system", "content": "Summarize the user's input."},
+            {"role": "system", "content": "Summarize the comments and determine the overall sentiment."},
             {"role": "user", "content": article_text
             },
         ],

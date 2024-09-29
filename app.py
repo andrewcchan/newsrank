@@ -31,7 +31,7 @@ for post in posts:
             comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
             if 'text' in comment.keys():
                 children_comments.append(comment['text']) 
-    comments_per_post[post['url']] = ''.join(children_comments)
+    comments_per_post[post['url']] = ''.join(children_comments)[:8000] #8000 token limit
            
 st.write('top 5 Hackerank Articles')
 def get_summary(article_url):

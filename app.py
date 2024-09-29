@@ -49,6 +49,7 @@ def get_summary(article_url):
 
     response = requests.post(azure_url, headers=headers, json=data)
     data = response.json()
+    st.write(data)
     return data['choices'][0]['message']['content']
 
 for hn_url in posts_urls:

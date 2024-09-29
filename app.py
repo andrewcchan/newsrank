@@ -40,7 +40,7 @@ def get_summary(article_url):
     article_text = comments_per_post[article_url]
     data = {
         "messages": [
-            {"role": "system", "content": "Summarize the comments and determine the overall sentiment."},
+            {"role": "system", "content": "Summarize the comments into 5 bullet points the report the overall sentiment for the comments."},
             {"role": "user", "content": article_text
             },
         ],
@@ -49,7 +49,6 @@ def get_summary(article_url):
 
     response = requests.post(azure_url, headers=headers, json=data)
     data = response.json()
-    st.write(data)
     return data['choices'][0]['message']['content']
 
 for hn_url in posts_urls:

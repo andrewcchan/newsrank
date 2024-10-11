@@ -28,14 +28,16 @@ for post in posts:
     if 'kids' in post.keys():
         kids = post['kids']
         for kid in kids:
-            comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
-            if 'text' in comment.keys():
-                children_comments.append(comment['text']) 
+            try:
+                comment = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{kid}.json").json()
+                if 'text' in comment.keys():
+                    children_comments.append(comment['text']) 
+            except:
+                pass
     comments_per_post[post['url']] = ''.join(children_comments)[:16000] #8000 token limit
            
 st.write('top 5 Hackerank Articles')
 def get_summary(article_url):
-
 
     article_text = comments_per_post[article_url]
     data = {
@@ -52,8 +54,9 @@ def get_summary(article_url):
     return data['choices'][0]['message']['content']
 
 for hn_url in posts_urls:
-   
     st.markdown(f'- {hn_url}')
-    st.markdown(f'  {get_summary(hn_url)}')
-
+    try:
+        st.markdown(f'  {get_summary(hn_url)}')
+    except:
+        st.markdown(f'  No comments for this article')
 
